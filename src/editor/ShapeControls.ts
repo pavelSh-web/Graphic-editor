@@ -4,6 +4,7 @@ const controlContainerClass = 'shape-controls';
 const controlClass = 'shape-control';
 
 let ctrlPressed = false;
+let shiftPressed = false;
 
 export default class ShapeControls {
     private static stopped: boolean = false;
@@ -58,6 +59,10 @@ export default class ShapeControls {
                 ctrlPressed = true;
             }
 
+            if (e.shiftKey) {
+                shiftPressed = true;
+            }
+
             switch (e.code) {
                 case 'Delete':
                     if (this.focusedShapes.length) {
@@ -90,7 +95,10 @@ export default class ShapeControls {
             }
         });
 
-        $(document).on('keyup', () => ctrlPressed = false);
+        $(document).on('keyup', () => {
+            ctrlPressed = false;
+            shiftPressed = false;
+        });
     }
 
     private static bindPointerEvents() {
@@ -168,7 +176,6 @@ export default class ShapeControls {
 
             this.start();
         });
-
         this.$controlContainer.on('pointermove', (e) => {
             if (this.stopped && !inMove && !inResize) {
                 return;
@@ -178,12 +185,14 @@ export default class ShapeControls {
 
             this.shapes.forEach(shape => shape.updateState({ hover: false }));
 
-            if ($control.length) {
-                const shapeId = $control.data('shape-id');
-                const shape = this.shapes.find(shape => shape.id == shapeId) as BaseShape;
+            if (!this.stopped) {
+                if ($control.length) {
+                    const shapeId = $control.data('shape-id');
+                    const shape = this.shapes.find(shape => shape.id == shapeId) as BaseShape;
 
-                if (shape) {
-                    shape.updateState({ hover: true });
+                    if (shape) {
+                        shape.updateState({ hover: true });
+                    }
                 }
             }
 
@@ -198,23 +207,32 @@ export default class ShapeControls {
                         const editableCoords = ($activeControl.attr('data-control') as string).split(',');
                         const bound: Partial<ShapeBound> = {};
 
-                        if (editableCoords.includes('right')) {
-                            bound.toX = e.pageX;
+                        if (!shiftPressed) {
+                            if (editableCoords.includes('right')) {
+                                bound.toX = e.pageX;
+                            }
+
+                            if (editableCoords.includes('bottom')) {
+                                bound.toY = e.pageY;
+                            }
+
+                            if (editableCoords.includes('left')) {
+                                bound.fromX = e.pageX;
+                            }
+
+                            if (editableCoords.includes('top')) {
+                                bound.fromY = e.pageY;
+                            }
+
+                            shape.resize({ bound });
+                        }
+                        else {
+                            // const proportionMax = shape.bound.width > shape.bound.height ? 'x' : 'y';
+                            //
+                            // const valueX = shiftPressed ? Math.max(e.pageX, e.pageY) : e.pageX;
+                            // const valueY = shiftPressed ? Math.max(e.pageX, e.pageY) : e.pageY;
                         }
 
-                        if (editableCoords.includes('bottom')) {
-                            bound.toY = e.pageY;
-                        }
-
-                        if (editableCoords.includes('left')) {
-                            bound.fromX = e.pageX;
-                        }
-
-                        if (editableCoords.includes('top')) {
-                            bound.fromY = e.pageY;
-                        }
-
-                        shape.resize({ bound });
                         shape.updateState({
                             resize: true
                         });

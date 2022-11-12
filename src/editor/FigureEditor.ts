@@ -34,27 +34,35 @@ export default class FigureEditor {
 
             if (Array.isArray(shapesObject)) {
                 shapesObject.forEach((shapeData) => {
-                    // @ts-ignore
-                    const shapeModule = shapeModules[shapeData.type];
+                    const shapeInstance = this.createShape(shapeData);
 
-                    if (shapeModule) {
-                        const shapeInstance = new (shapeModule)({
-                            ctx: this.ctx,
-                            id: shapeData.id,
-                            bound: shapeData.bound
-                        });
+                    shapeInstance.updateState({
+                        created: true
+                    });
 
-                        shapeInstance.updateState({
-                            created: true
-                        });
-
-                        this.shapes.push(shapeInstance);
-                    }
+                    this.renderCtx();
                 });
-
-                this.renderCtx()
             }
         }
+    }
+
+    createShape(shapeData: any, ) {
+        // @ts-ignore
+        const shapeModule = shapeModules[shapeData.type];
+
+        if (shapeModule) {
+            const shapeInstance = new (shapeModule)({
+                ctx: this.ctx,
+                id: shapeData.id,
+                bound: shapeData.bound
+            });
+
+            this.shapes.push(shapeInstance);
+
+            return shapeInstance;
+        }
+
+        return null;
     }
 
     deleteShape(shape: BaseShape) {
@@ -86,7 +94,8 @@ export default class FigureEditor {
 
             ShapeControls.stop();
 
-            const rect = new Rect({
+            const shape = this.createShape({
+                type: 'ellipse',
                 ctx: this.ctx,
                 bound: {
                     fromX: pageX,
@@ -94,12 +103,16 @@ export default class FigureEditor {
                 }
             });
 
-            this.shapes.push(rect);
+            console.log(shape);
+
+            if (!shape) {
+                return;
+            }
 
             $('body').on('pointermove.shape', (e) => {
                 const { pageX: x, pageY: y } = e as unknown as PointerEvent;
 
-                rect.resize({
+                shape.resize({
                     pointer: { x, y },
                     saveProportion: true
                 });
@@ -112,18 +125,18 @@ export default class FigureEditor {
                 const distance = Math.sqrt((pageX - initialPointer.pageX) ** 2 + (pageY - initialPointer.pageY) ** 2);
 
                 if (+distance.toFixed(0) <= 10) {
-                    const { width, height } = rect.defaultSize;
-                    rect.resize({
+                    const { width, height } = shape.defaultSize;
+                    shape.resize({
                         bound: {
                             width,
                             height,
-                            fromX: rect.bound.fromX - (width / 2),
-                            fromY: rect.bound.fromY - (height / 2)
+                            fromX: shape.bound.fromX - (width / 2),
+                            fromY: shape.bound.fromY - (height / 2)
                         }
                     })
                 }
 
-                rect.updateState({
+                shape.updateState({
                     focus: true,
                     created: true
                 });
@@ -166,7 +179,11 @@ export default class FigureEditor {
         this.updateViewport()
         this.clearCanvas();
 
+        this.ctx.save();
+
         this.shapes.forEach(shape => shape.render());
+
+        this.ctx.restore();
     }
 
     clearCanvas() {

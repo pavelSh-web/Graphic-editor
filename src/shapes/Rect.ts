@@ -1,7 +1,7 @@
 import BaseShape, { ShapeOptions } from './BaseShape';
 
 export default class Rect extends BaseShape {
-    override type = 'rectange';
+    override type = 'rectangle';
 
     constructor(options: ShapeOptions) {
         super(options);

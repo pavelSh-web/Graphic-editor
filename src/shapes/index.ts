@@ -1,5 +1,7 @@
 import Rect from './Rect';
+import Ellipse from './Ellipse';
 
 export default {
-    rectange: Rect
+    rectangle: Rect,
+    ellipse: Ellipse
 };
