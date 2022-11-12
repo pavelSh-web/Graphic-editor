@@ -1,0 +1,140 @@
+* {
+    box-sizing: border-box;
+}
+.shape-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.shape-control {
+    position: absolute;
+    border: 2px solid #477eff;
+    opacity: 0;
+}
+
+.shape-control.hover,
+.shape-control.focus {
+    opacity: 1;
+}
+
+.shape-control.move,
+.shape-control.focus {
+    cursor: move;
+}
+
+.shape-control.move .shape-control-handler {
+    opacity: 0 !important;
+}
+
+.shape-control.focus .shape-control__top-left,
+.shape-control.focus .shape-control__top-right,
+.shape-control.focus .shape-control__bottom-left,
+.shape-control.focus .shape-control__bottom-right {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.shape-control.focus .shape-control__top,
+.shape-control.focus .shape-control__right,
+.shape-control.focus .shape-control__bottom,
+.shape-control.focus .shape-control__left {
+    pointer-events: all;
+}
+
+.shape-control__top:hover,
+.shape-control__right:hover,
+.shape-control__bottom:hover,
+.shape-control__left:hover {
+    opacity: 1;
+}
+
+.shape-control__top,
+.shape-control__right,
+.shape-control__bottom,
+.shape-control__left {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(71, 126, 255, 0.75);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.shape-control__top {
+    width: 100%;
+    top: -2px;
+    left: -2px;
+    cursor: ns-resize;
+}
+
+.shape-control__right {
+    height: 100%;
+    right: -2px;
+    top: -2px;
+
+    cursor: ew-resize;
+}
+
+.shape-control__bottom {
+    width: 100%;
+    left: -2px;
+    bottom: -2px;
+    cursor: ns-resize;
+}
+
+.shape-control__left {
+    height: 100%;
+    left: -2px;
+    top: -2px;
+    cursor: ew-resize;
+}
+
+.shape-control__top-left:hover,
+.shape-control__top-right:hover,
+.shape-control__bottom-left:hover,
+.shape-control__bottom-right:hover {
+    background: rgb(68, 120, 255);
+}
+
+.shape-control__top-left,
+.shape-control__top-right,
+.shape-control__bottom-left,
+.shape-control__bottom-right {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border: 1px solid #477eff;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: background 0.15s ease;
+}
+
+.shape-control__top-left {
+    top: -4px;
+    left: -4px;
+    cursor: nwse-resize;
+}
+
+.shape-control__top-right {
+    top: -4px;
+    right: -4px;
+    cursor: nesw-resize;
+}
+
+.shape-control__bottom-left {
+    bottom: -4px;
+    left: -4px;
+    cursor: nesw-resize;
+}
+
+.shape-control__bottom-right {
+    bottom: -4px;
+    right: -4px;
+    cursor: nwse-resize;
+}
