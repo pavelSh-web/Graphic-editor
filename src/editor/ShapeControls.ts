@@ -271,6 +271,7 @@ export default class ShapeControls {
                 <div class="${ controlClass }-handler ${ controlClass }__top-right" data-control="top,right"></div>
                 <div class="${ controlClass }-handler ${ controlClass }__bottom-left" data-control="bottom,left"></div>
                 <div class="${ controlClass }-handler ${ controlClass }__bottom-right" data-control="bottom,right"></div>
+                <div class="${ controlClass }-size"></div>
             </div>
         `);
 
@@ -290,6 +291,7 @@ export default class ShapeControls {
                 height
             });
 
+            shape.$control.find(`.${ controlClass }-size`).text(`${ Math.round(width) } × ${ Math.round(height) }`);
 
             Object.entries(shape.state).forEach(([stateName, stateValue]) => {
                 shape.$control.toggleClass(stateName, stateValue);

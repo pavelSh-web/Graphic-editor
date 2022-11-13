@@ -1,23 +1,30 @@
 * {
     box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
 }
+
 .shape-controls {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
 }
 
 .shape-control {
     position: absolute;
     border: 2px solid #477eff;
+    transition: opacity 0.1s ease;
     opacity: 0;
 }
 
 .shape-control.hover,
 .shape-control.focus {
     opacity: 1;
+}
+
+.shape-control.move {
+    opacity: 0.4;
 }
 
 .shape-control.move,
@@ -137,4 +144,24 @@
     bottom: -4px;
     right: -4px;
     cursor: nwse-resize;
+}
+
+.shape-control.focus:not(.move) .shape-control-size {
+    opacity: 1;
+}
+
+.shape-control-size {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    bottom: -25px;
+    background: #477eff;
+    border-radius: 10px;
+    padding: 4px 7px;
+    color: white;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
 }

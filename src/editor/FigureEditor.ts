@@ -95,15 +95,13 @@ export default class FigureEditor {
             ShapeControls.stop();
 
             const shape = this.createShape({
-                type: 'ellipse',
+                type: this.shapes.length % 2 ? 'ellipse' : 'rectangle',
                 ctx: this.ctx,
                 bound: {
                     fromX: pageX,
                     fromY: pageY
                 }
             });
-
-            console.log(shape);
 
             if (!shape) {
                 return;
@@ -194,6 +192,6 @@ export default class FigureEditor {
         this.canvas.width  = width;
         this.canvas.height = height;
 
-        this.ctx.scale(DPI, DPI);
+        this.ctx.scale(1, 1);
     }
 }
