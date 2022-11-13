@@ -147,6 +147,10 @@
 }
 
 .shape-control.focus:not(.move) .shape-control-size {
+    opacity: 0.5;
+}
+
+.shape-control.resize:not(.move) .shape-control-size {
     opacity: 1;
 }
 

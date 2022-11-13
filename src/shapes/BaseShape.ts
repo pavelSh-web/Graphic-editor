@@ -152,11 +152,12 @@ export default class BaseShape {
     }
 
     resetStates() {
-        Object.entries(this.state).forEach(([, stateValue]) => {
-            stateValue = false;
+        this.updateState({
+            move: false,
+            hover: false,
+            focus: false,
+            resize: false
         });
-
-        ShapeControls.updateContol(this);
     }
 
     destroy() {

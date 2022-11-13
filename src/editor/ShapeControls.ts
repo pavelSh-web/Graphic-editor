@@ -86,6 +86,9 @@ export default class ShapeControls {
                 case 'ArrowRight':
                     this.focusedShapes.forEach(shape => shape.move({ x: shape.bound.fromX + step }));
                     break;
+                case 'Escape':
+                    this.shapes.forEach(shape => shape.resetStates());
+                    break;
             }
 
             if (needRender) {
