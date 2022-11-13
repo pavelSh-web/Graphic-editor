@@ -6,6 +6,8 @@ const controlClass = 'shape-control';
 let ctrlPressed = false;
 let shiftPressed = false;
 
+let _keyUpTimeout: any = null;
+
 export default class ShapeControls {
     private static stopped: boolean = false;
 
@@ -53,7 +55,8 @@ export default class ShapeControls {
     private static bindKeyboardEvents() {
         $(document).on('keydown', (e) => {
             const step = e.shiftKey ? 10 : 1;
-            let needRender = e.code.includes('Arrow');
+            const isMove = e.code.includes('Arrow');
+            let needRender = isMove;
 
             if (e.ctrlKey) {
                 ctrlPressed = true;
@@ -74,6 +77,31 @@ export default class ShapeControls {
                         this.shapes.forEach((shape) => shape.updateState({ focus: true }));
                     }
                     break;
+                case 'KeyD':
+                    e.preventDefault();
+
+                    if (e.ctrlKey) {
+                        const focusedShape = this.focusedShapes[0];
+
+                        needRender = true;
+
+                        if (focusedShape) {
+                            const shape = this.editor.createShape({
+                                type: focusedShape.type,
+                                bound: {
+                                    fromX: focusedShape.bound.toX + 20,
+                                    fromY: focusedShape.bound.fromY,
+                                    width: focusedShape.bound.width,
+                                    height: focusedShape.bound.height,
+                                }
+                            });
+
+                            this.createControl(shape);
+                            this.shapes.forEach(shape => shape.resetStates());
+                            shape.updateState({ focus: true });
+                        }
+                    }
+                    break;
                 case 'ArrowUp':
                     this.focusedShapes.forEach(shape => shape.move({ y: shape.bound.fromY - step }));
                     break;
@@ -91,6 +119,10 @@ export default class ShapeControls {
                     break;
             }
 
+            if (isMove) {
+                this.focusedShapes.forEach(shape => shape.updateState({ move: true }));
+            }
+
             if (needRender) {
                 this.focusedShapes.forEach(shape => this.updateContol(shape));
 
@@ -98,9 +130,20 @@ export default class ShapeControls {
             }
         });
 
-        $(document).on('keyup', () => {
+        $(document).on('keyup', (e) => {
+            const isMove = e.code.includes('Arrow');
+
             ctrlPressed = false;
             shiftPressed = false;
+
+            if (isMove) {
+                clearTimeout(_keyUpTimeout);
+
+                _keyUpTimeout = setTimeout(() => {
+                    this.shapes.forEach(shape => shape.updateState({ move: false }));
+                    this.shapes.forEach(shape => this.updateContol(shape));
+                }, 1000);
+            }
         });
     }
 
