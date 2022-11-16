@@ -1,0 +1,23 @@
+.panel {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.panel-shapes {
+    background: #2D405B;
+    padding: 5px;
+    display: flex;
+    gap: 5px;
+    border-radius: 25px;
+}
+
+.panel-shapes-type {
+    padding: 9px 18px;
+}
+
+.panel-shapes-type.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+}

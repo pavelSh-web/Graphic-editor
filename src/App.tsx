@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React  from 'react';
+import Panel from './views/Panel';
 
-function App() {
-    const [count, setCount] = useState(5);
-
+function App(props: any) {
     return (
-        <div className="App">
-            <h1 onMouseDownCapture={ setCount.bind(count, count + 1) }>{ count }</h1>
-        </div>
+        <Panel editor={ props.editor } />
     );
 }
 

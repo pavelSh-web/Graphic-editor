@@ -63,7 +63,7 @@ export default class FigureEditor {
         }
     }
 
-    createShape(shapeData: any, ) {
+    createShape(shapeData: any) {
         // @ts-ignore
         const shapeModule = shapeModules[shapeData.type];
 
@@ -74,12 +74,16 @@ export default class FigureEditor {
                 bound: shapeData.bound
             }));
 
-            this.shapes.push(shapeInstance);
+            this.pushShape(shapeInstance);
 
             return shapeInstance;
         }
 
         return null;
+    }
+
+    pushShape(shape: BaseShape) {
+        this.shapes.push(shape);
     }
 
     deleteShape(shape: BaseShape) {
@@ -100,10 +104,7 @@ export default class FigureEditor {
 
         $('body').append(this.canvas);
 
-        $(window).on('resize', () => {
-            this.updateViewport();
-            this.renderCtx();
-        });
+        $(window).on('resize', this.renderCtx);
 
         $('body').on('pointerdown', (e) => {
             const { pageX, pageY } = e as unknown as PointerEvent;
