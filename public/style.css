@@ -11,6 +11,16 @@
     height: 100vh;
 }
 
+.shape-controls.multiply-focus .shape-control {
+    --borderColor: #a399ff;
+}
+
+.shape-controls.multiply-focus .shape-control-resize,
+.shape-controls.multiply-focus .shape-control-rotate,
+.shape-controls.multiply-focus .shape-control-size {
+    display: none;
+}
+
 .shape-controls.in-rotate,
 .shape-controls.in-rotate *:not(.active) {
     cursor: none;
@@ -21,8 +31,10 @@
 }
 
 .shape-control {
+    --borderColor: #477eff;
+
     position: absolute;
-    border: 2px solid #477eff;
+    border: 2px solid var(--borderColor);
     transition: opacity 0.1s ease;
     opacity: 0;
 }
@@ -173,7 +185,11 @@
     background-position: center;
     background-repeat: no-repeat;
     opacity: 0;
+    pointer-events: none;
+}
 
+.shape-control.focus .shape-control-rotate {
+    pointer-events: all;
 }
 
 .shape-control.focus:not(.move):not(.resize) .shape-control-rotate:hover,

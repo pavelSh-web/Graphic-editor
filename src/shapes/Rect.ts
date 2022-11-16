@@ -8,7 +8,7 @@ export default class Rect extends BaseShape {
     }
 
     override render() {
-        const { fromX, fromY, toY, toX } = this.bound;
+        const { fromX, fromY, toY, toX } = this.data.bound;
 
         this.ctx.fillRect(fromX, fromY, toX - fromX, toY - fromY);
     }

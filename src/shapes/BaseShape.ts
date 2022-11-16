@@ -1,6 +1,13 @@
 import FigureEditor from '../editor/FigureEditor';
 import { getRandomId } from '../helpers';
 import ShapeControls from '../editor/ShapeControls';
+import {
+    observable,
+    makeObservable,
+    action,
+    computed,
+    isAction
+} from 'mobx';
 
 export type State = 'hover' | 'focus' | 'move' | 'resize' | 'rotate' | 'created';
 export type TransformOrigin = 'start' | 'end'; // | 'center'
@@ -28,28 +35,40 @@ export default class BaseShape {
     id: number;
     type: string = '';
     ctx: CanvasRenderingContext2D;
-    state: ShapeState = {
-        move: false,
-        hover: false,
-        focus: false,
-        resize: false,
-        rotate: false,
-        created: false
-    }
-    bound: ShapeBound = {
-        fromX: 0,
-        fromY: 0,
-        toX: 0,
-        toY: 0,
-        width: 0,
-        height: 0
+
+    data: { state: ShapeState, bound: ShapeBound } = {
+        state: {
+            move: false,
+            hover: false,
+            focus: false,
+            resize: false,
+            rotate: false,
+            created: false
+        },
+        bound: {
+            fromX: 0,
+            fromY: 0,
+            toX: 0,
+            toY: 0,
+            width: 0,
+            height: 0
+        }
     };
+
     defaultSize: ShapeSize = {
         width: 100,
         height: 100
     }
     // @ts-ignore
     $control: JQuery;
+
+    get width() {
+        return this.data.bound.width;
+    }
+
+    get height() {
+        return this.data.bound.height;
+    }
 
     constructor(options: ShapeOptions) {
         if (options.bound) {
@@ -62,15 +81,24 @@ export default class BaseShape {
 
         this.ctx = options.ctx;
         this.id = options.id ?? getRandomId();
+
+        makeObservable(this, {
+            data: observable,
+            height: computed,
+            width: computed,
+            updateState: action,
+            updateBound: action,
+            resetStates: action
+        });
     }
 
     public move({ x, y }: Partial<ShapeTransformPointer>) {
         this.updateBound({
-            fromX: x ?? this.bound.fromX,
-            fromY: y ?? this.bound.fromY,
-            width: this.bound.width,
-            height: this.bound.height
-        }, false);
+            fromX: x ?? this.data.bound.fromX,
+            fromY: y ?? this.data.bound.fromY,
+            width: this.data.bound.width,
+            height: this.data.bound.height
+        });
     }
 
     public resize({ origin = { x: 'start', y: 'start' }, pointer, bound, saveProportion }: { origin?: ShapeTransformOrigin, bound?: Partial<ShapeBound>, pointer?: ShapeTransformPointer, saveProportion?: boolean }) {
@@ -96,31 +124,33 @@ export default class BaseShape {
     }
 
     render() {}
-    
-    private updateBound(bound: Partial<ShapeBound>, updateSize = true) {
-        this.bound = {
-            ...this.bound,
+
+
+    updateBound(bound: Partial<ShapeBound>) {
+        this.data.bound = {
+            ...this.data.bound,
             ...bound
         };
 
         if (bound.width) {
-            this.bound.toX = this.bound.fromX + bound.width;
+            this.data.bound.toX = this.data.bound.fromX + bound.width;
         }
         else {
-            this.bound.width = Math.abs(this.bound.toX - this.bound.fromX);
+            this.data.bound.width = Math.abs(this.data.bound.toX - this.data.bound.fromX);
         }
 
         if (bound.height) {
-            this.bound.toY = this.bound.fromY + bound.height;
+            this.data.bound.toY = this.data.bound.fromY + bound.height;
         }
         else {
-            this.bound.height = Math.abs(this.bound.toY - this.bound.fromY);
+            this.data.bound.height = Math.abs(this.data.bound.toY - this.data.bound.fromY);
         }
     }
 
+
     updateState(states: Partial<ShapeState>) {
-        this.state = {
-            ...this.state,
+        this.data.state = {
+            ...this.data.state,
             ...states
         }
 
@@ -130,12 +160,16 @@ export default class BaseShape {
 
             ShapeControls.createControl(this);
         }
+    }
 
-        ShapeControls.updateContol(this);
+    hasState(state: State | State[], some = false) {
+        const states = Array.isArray(state) ? state : [state];
+
+        return some ? states.some(state => this.data.state[state]) : states.every(state => this.data.state[state]);
     }
 
     normalizeBound() {
-        const { fromX, fromY, toX, toY } = this.bound;
+        const { fromX, fromY, toX, toY } = this.data.bound;
 
         if (toX < fromX) {
             this.updateBound({

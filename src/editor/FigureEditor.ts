@@ -1,7 +1,7 @@
-import Rect from '../shapes/Rect';
 import BaseShape from '../shapes/BaseShape';
 import ShapeControls from './ShapeControls';
 import shapeModules from '../shapes';
+import { autorun, isObservable, makeObservable, observable } from 'mobx';
 
 export default class FigureEditor {
     // @ts-ignore
@@ -17,13 +17,30 @@ export default class FigureEditor {
     public shapes: BaseShape[] = [];
 
     constructor() {
+        this.initMobx();
+
         ShapeControls.create(this.shapes, this);
 
         this.initCanvas();
         this.loadFromLS();
 
         // @ts-ignore
+        // Только для дебага
         window.shapes = this.shapes;
+    }
+
+    initMobx() {
+        makeObservable(this, {
+            shapes: observable
+        });
+
+        autorun(() => {
+            const needRender = this.shapes.some(shape => shape.hasState(['resize', 'move', 'rotate'], true));
+
+            if (needRender) {
+                this.renderCtx();
+            }
+        });
     }
 
     loadFromLS() {
@@ -51,11 +68,11 @@ export default class FigureEditor {
         const shapeModule = shapeModules[shapeData.type];
 
         if (shapeModule) {
-            const shapeInstance = new (shapeModule)({
+            const shapeInstance = observable(new (shapeModule)({
                 ctx: this.ctx,
                 id: shapeData.id,
                 bound: shapeData.bound
-            });
+            }));
 
             this.shapes.push(shapeInstance);
 
@@ -124,12 +141,14 @@ export default class FigureEditor {
 
                 if (+distance.toFixed(0) <= 10) {
                     const { width, height } = shape.defaultSize;
+                    const { fromX, fromY } = shape.data.bound;
+
                     shape.resize({
                         bound: {
                             width,
                             height,
-                            fromX: shape.bound.fromX - (width / 2),
-                            fromY: shape.bound.fromY - (height / 2)
+                            fromX: fromX - (width / 2),
+                            fromY: fromY - (height / 2)
                         }
                     })
                 }
@@ -147,7 +166,7 @@ export default class FigureEditor {
             });
         });
 
-        $(window).on('unload', this.saveToLS);
+        // $(window).on('unload', this.saveToLS);
 
         this.renderCtx();
     }
@@ -155,7 +174,7 @@ export default class FigureEditor {
     saveToLS() {
         this.shapes.forEach((shape) => {
             // Удаляем фигуру, если ее ширина или высота равна 0
-            if ((!shape.bound.height || !shape.bound.width) && shape.state.created) {
+            if ((!shape.height || !shape.width) && shape.hasState('created')) {
                 this.deleteShape(shape);
 
                 return;

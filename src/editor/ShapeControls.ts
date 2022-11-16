@@ -1,4 +1,5 @@
 import BaseShape, { ShapeBound } from '../shapes/BaseShape';
+import { autorun, computed, isObservable, makeObservable, reaction } from 'mobx';
 
 const controlContainerClass = 'shape-controls';
 const controlClass = 'shape-control';
@@ -24,7 +25,7 @@ export default class ShapeControls {
     }
 
     static get focusedShapes() {
-        return this.shapes.filter(shape => shape.state.focus);
+        return this.shapes.filter(shape => shape.hasState('focus'));
     }
 
     static create(shapes: BaseShape[], editor: any) {
@@ -38,12 +39,24 @@ export default class ShapeControls {
     }
 
     constructor(shapes: BaseShape[], editor: any) {
+        ShapeControls.shapes = shapes;
+        ShapeControls.editor = editor;
+
         ShapeControls.initControls();
         ShapeControls.bindPointerEvents();
         ShapeControls.bindKeyboardEvents();
 
-        ShapeControls.shapes = shapes;
-        ShapeControls.editor = editor;
+        ShapeControls.initMobx();
+    }
+
+    private static initMobx() {
+        makeObservable(this, {
+            focusedShapes: computed
+        });
+
+        autorun(() => {
+            this.$controlContainer.toggleClass('multiply-focus', this.focusedShapes.length > 1);
+        });
     }
 
     private static initControls() {
@@ -89,10 +102,10 @@ export default class ShapeControls {
                             const shape = this.editor.createShape({
                                 type: focusedShape.type,
                                 bound: {
-                                    fromX: focusedShape.bound.toX + 20,
-                                    fromY: focusedShape.bound.fromY,
-                                    width: focusedShape.bound.width,
-                                    height: focusedShape.bound.height,
+                                    fromX: focusedShape.data.bound.toX + 20,
+                                    fromY: focusedShape.data.bound.fromY,
+                                    width: focusedShape.width,
+                                    height: focusedShape.height,
                                 }
                             });
 
@@ -103,16 +116,16 @@ export default class ShapeControls {
                     }
                     break;
                 case 'ArrowUp':
-                    this.focusedShapes.forEach(shape => shape.move({ y: shape.bound.fromY - step }));
+                    this.focusedShapes.forEach(shape => shape.move({ y: shape.data.bound.fromY - step }));
                     break;
                 case 'ArrowDown':
-                    this.focusedShapes.forEach(shape => shape.move({ y: shape.bound.fromY + step }));
+                    this.focusedShapes.forEach(shape => shape.move({ y: shape.data.bound.fromY + step }));
                     break;
                 case 'ArrowLeft':
-                    this.focusedShapes.forEach(shape => shape.move({ x: shape.bound.fromX - step }));
+                    this.focusedShapes.forEach(shape => shape.move({ x: shape.data.bound.fromX - step }));
                     break;
                 case 'ArrowRight':
-                    this.focusedShapes.forEach(shape => shape.move({ x: shape.bound.fromX + step }));
+                    this.focusedShapes.forEach(shape => shape.move({ x: shape.data.bound.fromX + step }));
                     break;
                 case 'Escape':
                     this.shapes.forEach(shape => shape.resetStates());
@@ -121,12 +134,6 @@ export default class ShapeControls {
 
             if (isMove) {
                 this.focusedShapes.forEach(shape => shape.updateState({ move: true }));
-            }
-
-            if (needRender) {
-                this.focusedShapes.forEach(shape => this.updateContol(shape));
-
-                ShapeControls.editor.renderCtx();
             }
         });
 
@@ -200,7 +207,7 @@ export default class ShapeControls {
                 }
 
                 if (shape) {
-                    if (shape.state.focus) {
+                    if (shape.hasState('focus')) {
                         return;
                     }
 
@@ -238,15 +245,19 @@ export default class ShapeControls {
 
             const $control = $(e.target).closest(`.${ controlClass }`) as JQuery;
 
-            this.shapes.forEach(shape => shape.updateState({ hover: false }));
+            this.shapes.forEach((shape) => {
+                if (shape.hasState('hover')) {
+                    shape.updateState({ hover: false })
+                }
+            });
 
             if (!this.stopped) {
                 if ($control.length) {
                     const shapeId = $control.data('shape-id');
-                    const shape = this.shapes.find(shape => shape.id == shapeId) as BaseShape;
+                    const currentShape = this.shapes.find(shape => shape.id == shapeId) as BaseShape;
 
-                    if (shape) {
-                        shape.updateState({ hover: true });
+                    if (currentShape && !currentShape.hasState('hover')) {
+                        currentShape.updateState({ hover: true });
                     }
                 }
             }
@@ -292,8 +303,6 @@ export default class ShapeControls {
                             resize: true
                         });
                     }
-
-                    ShapeControls.editor.renderCtx();
                 }
                 else if (inRotate) {
                     this.stop();
@@ -320,9 +329,7 @@ export default class ShapeControls {
                             shape.updateState({ move: true });
                         }
 
-                    })
-
-                    ShapeControls.editor.renderCtx();
+                    });
                 }
             }
         });
@@ -350,11 +357,18 @@ export default class ShapeControls {
         this.$controlContainer.append(shape.$control);
 
         this.updateContol(shape);
+
+        reaction(
+            () => [shape.data.bound, shape.data.state],
+            () => {
+                this.updateContol(shape);
+            }
+        );
     }
 
     static updateContol(shape: BaseShape) {
         if (shape.$control) {
-            const { fromX, fromY, toX, toY, width, height } = shape.bound;
+            const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
 
             shape.$control.css({
                 top: Math.min(fromY, toY),
@@ -365,7 +379,7 @@ export default class ShapeControls {
 
             shape.$control.find(`.${ controlClass }-size`).text(`${ Math.round(width) } × ${ Math.round(height) }`);
 
-            Object.entries(shape.state).forEach(([stateName, stateValue]) => {
+            Object.entries(shape.data.state).forEach(([stateName, stateValue]) => {
                 shape.$control.toggleClass(stateName, stateValue);
             });
         }

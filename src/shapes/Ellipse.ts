@@ -8,7 +8,7 @@ export default class Ellipse extends BaseShape {
     }
 
     override render() {
-        const { fromX, fromY, toY, toX, width, height } = this.bound;
+        const { fromX, fromY, toY, toX, width, height } = this.data.bound;
 
         const centerX = Math.max(fromX, toX) - width / 2;
         const centerY = Math.max(fromY, toY) - height / 2;
