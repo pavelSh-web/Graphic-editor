@@ -2,7 +2,7 @@ import FigureEditor from '../editor/FigureEditor';
 import { getRandomId } from '../helpers';
 import ShapeControls from '../editor/ShapeControls';
 
-export type State = 'hover' | 'focus' | 'move' | 'resize' | 'created';
+export type State = 'hover' | 'focus' | 'move' | 'resize' | 'rotate' | 'created';
 export type TransformOrigin = 'start' | 'end'; // | 'center'
 export type ShapeTransformOrigin = Record<'x' | 'y', TransformOrigin>;
 export type ShapeTransformPointer = Record<'x' | 'y', number>;
@@ -33,6 +33,7 @@ export default class BaseShape {
         hover: false,
         focus: false,
         resize: false,
+        rotate: false,
         created: false
     }
     bound: ShapeBound = {

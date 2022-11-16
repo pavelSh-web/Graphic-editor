@@ -150,6 +150,7 @@ export default class ShapeControls {
     private static bindPointerEvents() {
         let inMove = false;
         let inResize = false;
+        let inRotate = false;
 
         let initialCoordControl = {
             x: 0,
@@ -162,7 +163,8 @@ export default class ShapeControls {
             }
 
             const $control = $(e.target).closest(`.${ controlClass }`);
-            const $controlResizer = $(e.target).closest(`.${ controlClass }-handler`);
+            const $controlResizer = $(e.target).closest(`.${ controlClass }-resize`);
+            const $controlRotate = $(e.target).closest(`.${ controlClass }-rotate`);
             const controlOffset = $control.offset();
 
             if (e.pageX && e.pageY && controlOffset) {
@@ -188,6 +190,11 @@ export default class ShapeControls {
 
                     $controlResizer.addClass('active');
                 }
+                else if ($controlRotate.length) {
+                    inRotate = true;
+
+                    $controlRotate.addClass('active');
+                }
                 else {
                     inMove = true;
                 }
@@ -209,6 +216,7 @@ export default class ShapeControls {
         this.$controlContainer.on('pointerup', (e) => {
             inMove = false;
             inResize = false;
+            inRotate = false;
 
             this.focusedShapes.forEach((shape) => {
                 shape.normalizeBound();
@@ -218,7 +226,8 @@ export default class ShapeControls {
                 });
             });
 
-            this.$controlContainer.find(`.${ controlClass }-handler.active`).removeClass('active');
+            this.$controlContainer.find(`.active`).removeClass('active');
+            this.$controlContainer.removeClass('in-rotate');
 
             this.start();
         });
@@ -249,8 +258,8 @@ export default class ShapeControls {
                     if (e.pageX && e.pageY) {
                         const shape = this.focusedShapes[0];
 
-                        const $activeControl = shape.$control.find(`.${ controlClass }-handler.active`) as JQuery;
-                        const editableCoords = ($activeControl.attr('data-control') as string).split(',');
+                        const $activeControl = shape.$control.find(`.${ controlClass }-resize.active`) as JQuery;
+                        const editableCoords = ($activeControl.attr('data-resize-control') as string).split(',');
                         const bound: Partial<ShapeBound> = {};
 
                         if (!shiftPressed) {
@@ -286,6 +295,19 @@ export default class ShapeControls {
 
                     ShapeControls.editor.renderCtx();
                 }
+                else if (inRotate) {
+                    this.stop();
+
+                    if (e.pageX && e.pageY) {
+                        const shape = this.focusedShapes[0];
+
+                        this.$controlContainer.addClass('in-rotate');
+
+                        shape.updateState({
+                            rotate: true
+                        });
+                    }
+                }
                 else if (inMove && this.focusedShapes.length === 1) {
                     this.stop();
 
@@ -309,14 +331,18 @@ export default class ShapeControls {
     static createControl(shape: BaseShape) {
         shape.$control = $(`
             <div class="${ controlClass }" data-shape-id="${ shape.id }">
-                <div class="${ controlClass }-handler ${ controlClass }__top" data-control="top"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__right" data-control="right"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__bottom" data-control="bottom"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__left" data-control="left"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__top-left" data-control="top,left"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__top-right" data-control="top,right"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__bottom-left" data-control="bottom,left"></div>
-                <div class="${ controlClass }-handler ${ controlClass }__bottom-right" data-control="bottom,right"></div>
+                <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-left" data-rotate-control="top,left"></div>
+                <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-right" data-rotate-control="top,right"></div>
+                <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-left" data-rotate-control="bottom,left"></div>
+                <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-right" data-rotate-control="bottom,right"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__top" data-resize-control="top"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__right" data-resize-control="right"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__bottom" data-resize-control="bottom"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__left" data-resize-control="left"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__top-left" data-resize-control="top,left"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__top-right" data-resize-control="top,right"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-left" data-resize-control="bottom,left"></div>
+                <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-right" data-resize-control="bottom,right"></div>
                 <div class="${ controlClass }-size"></div>
             </div>
         `);
