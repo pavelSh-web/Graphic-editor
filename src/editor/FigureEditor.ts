@@ -63,7 +63,7 @@ export default class FigureEditor {
         }
     }
 
-    createShape(shapeData: any) {
+    createShape(shapeData: any, skipRender = false) {
         // @ts-ignore
         const shapeModule = shapeModules[shapeData.type];
 
@@ -75,6 +75,10 @@ export default class FigureEditor {
             }));
 
             this.pushShape(shapeInstance);
+
+            if (!skipRender) {
+                this.renderCtx();
+            }
 
             return shapeInstance;
         }
@@ -119,7 +123,7 @@ export default class FigureEditor {
                     fromX: pageX,
                     fromY: pageY
                 }
-            });
+            }, true);
 
             if (!shape) {
                 return;

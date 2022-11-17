@@ -148,7 +148,6 @@ export default class ShapeControls {
 
                 _keyUpTimeout = setTimeout(() => {
                     this.shapes.forEach(shape => shape.updateState({ move: false }));
-                    this.shapes.forEach(shape => this.updateContol(shape));
                 }, 1000);
             }
         });
@@ -356,17 +355,31 @@ export default class ShapeControls {
 
         this.$controlContainer.append(shape.$control);
 
-        this.updateContol(shape);
+        this.updateResizeContol(shape);
+        this.updateSizeControl(shape);
 
         reaction(
             () => [shape.data.bound, shape.data.state],
             () => {
-                this.updateContol(shape);
+                this.updateResizeContol(shape);
+            }
+        );
+
+        reaction(
+            () => [shape.width, shape.height],
+            () => {
+                this.updateSizeControl(shape);
             }
         );
     }
 
-    static updateContol(shape: BaseShape) {
+    static updateSizeControl(shape: BaseShape) {
+        if (shape.$control) {
+            shape.$control.find(`.${ controlClass }-size`).text(`${ Math.round(shape.width) } × ${ Math.round(shape.height) }`);
+        }
+    }
+
+    static updateResizeContol(shape: BaseShape) {
         if (shape.$control) {
             const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
 
@@ -376,8 +389,6 @@ export default class ShapeControls {
                 width,
                 height
             });
-
-            shape.$control.find(`.${ controlClass }-size`).text(`${ Math.round(width) } × ${ Math.round(height) }`);
 
             Object.entries(shape.data.state).forEach(([stateName, stateValue]) => {
                 shape.$control.toggleClass(stateName, stateValue);
