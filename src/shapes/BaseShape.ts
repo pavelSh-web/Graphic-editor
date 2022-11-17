@@ -154,11 +154,8 @@ export default class BaseShape {
             ...states
         }
 
-        // Мега костыль
         if (states.created) {
             this.normalizeBound();
-
-            ShapeControls.createControl(this);
         }
     }
 

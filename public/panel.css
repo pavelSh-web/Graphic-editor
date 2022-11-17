@@ -4,6 +4,8 @@
     left: 50%;
     transform: translateX(-50%);
     user-select: none;
+    display: flex;
+    align-items: center;
 }
 
 .panel-shapes {
@@ -15,10 +17,48 @@
 }
 
 .panel-shapes-type {
-    padding: 9px 18px;
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 25px;
+    transition: background 0.2s ease;
+}
+
+.panel-shapes-type svg {
+    display: block;
+    max-width: 24px;
+    transform: scale(0.9);
+    transition: transform 0.2s ease;
 }
 
 .panel-shapes-type.active {
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 25px;
+    pointer-events: none;
+}
+
+.panel-shapes-type:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.panel-shapes-type.active svg,
+.panel-shapes-type:hover svg {
+    transform: scale(1);
+}
+
+.panel-editor {
+    background: #F6F6F6;
+    padding: 5px 12px 5px 40px;
+    display: flex;
+    gap: 5px;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    margin-left: -25px;
+    z-index: -1;
+}
+
+.panel-editor-inner {
+    height: 40px;
 }

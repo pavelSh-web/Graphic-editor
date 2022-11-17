@@ -1,5 +1,5 @@
 import BaseShape, { ShapeBound } from '../shapes/BaseShape';
-import { autorun, computed, isObservable, makeObservable, reaction } from 'mobx';
+import { autorun, computed, makeObservable, reaction } from 'mobx';
 
 const controlContainerClass = 'shape-controls';
 const controlClass = 'shape-control';
@@ -10,46 +10,35 @@ let shiftPressed = false;
 let _keyUpTimeout: any = null;
 
 export default class ShapeControls {
-    private static stopped: boolean = false;
+    private stopped: boolean = false;
+
+    shapes: BaseShape[] = [];
+
+    editor: any;
 
     // @ts-ignore
-    static _instance: ShapeControls;
-    static shapes: BaseShape[] = [];
+    $controlContainer: JQuery;
 
-    static editor: any;
-
-    static $controlContainer: JQuery;
-
-    static get $controls() {
+    get $controls() {
         return this.$controlContainer.find('.shape-control');
     }
 
-    static get focusedShapes() {
+    get focusedShapes() {
         return this.shapes.filter(shape => shape.hasState('focus'));
     }
 
-    static create(shapes: BaseShape[], editor: any) {
-        if (this._instance) {
-            return this._instance;
-        }
-
-        this._instance = new ShapeControls(shapes, editor);
-
-        return this._instance;
-    }
-
     constructor(shapes: BaseShape[], editor: any) {
-        ShapeControls.shapes = shapes;
-        ShapeControls.editor = editor;
+        this.shapes = shapes;
+        this.editor = editor;
 
-        ShapeControls.initControls();
-        ShapeControls.bindPointerEvents();
-        ShapeControls.bindKeyboardEvents();
+        this.initControls();
+        this.bindPointerEvents();
+        this.bindKeyboardEvents();
 
-        ShapeControls.initMobx();
+        this.initMobx();
     }
 
-    private static initMobx() {
+    private initMobx() {
         makeObservable(this, {
             focusedShapes: computed
         });
@@ -59,13 +48,13 @@ export default class ShapeControls {
         });
     }
 
-    private static initControls() {
+    private initControls() {
         this.$controlContainer = $(`<div class="${ controlContainerClass }"></div>`);
 
-        $('body').append(this.$controlContainer);
+        $('body').prepend(this.$controlContainer);
     }
 
-    private static bindKeyboardEvents() {
+    private bindKeyboardEvents() {
         $(document).on('keydown', (e) => {
             const step = e.shiftKey ? 10 : 1;
             const isMove = e.code.includes('Arrow');
@@ -153,7 +142,7 @@ export default class ShapeControls {
         });
     }
 
-    private static bindPointerEvents() {
+    private bindPointerEvents() {
         let inMove = false;
         let inResize = false;
         let inRotate = false;
@@ -334,7 +323,7 @@ export default class ShapeControls {
         });
     }
 
-    static createControl(shape: BaseShape) {
+    createControl(shape: BaseShape) {
         shape.$control = $(`
             <div class="${ controlClass }" data-shape-id="${ shape.id }">
                 <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-left" data-rotate-control="top,left"></div>
@@ -373,13 +362,13 @@ export default class ShapeControls {
         );
     }
 
-    static updateSizeControl(shape: BaseShape) {
+    updateSizeControl(shape: BaseShape) {
         if (shape.$control) {
             shape.$control.find(`.${ controlClass }-size`).text(`${ Math.round(shape.width) } × ${ Math.round(shape.height) }`);
         }
     }
 
-    static updateResizeContol(shape: BaseShape) {
+    updateResizeContol(shape: BaseShape) {
         if (shape.$control) {
             const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
 
@@ -396,11 +385,11 @@ export default class ShapeControls {
         }
     }
 
-    static stop() {
+    stop() {
         this.stopped = true;
     }
 
-    static start() {
+    start() {
         this.stopped = false;
     }
 }

@@ -1,3 +1,11 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="1.5" y="1.5" width="21" height="21" stroke="white" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg">
+    <symbol viewBox="0 0 24 24" fill="none" id="rectangle">
+        <rect x="1.5" y="1.5" width="21" height="21" stroke="white" stroke-width="3"/>
+    </symbol>
+    <symbol viewBox="0 0 29 29" fill="none" id="ellipse">
+        <rect x="1.5" y="1.5" width="26" height="26" rx="13" stroke="white" stroke-width="3"/>
+    </symbol>
+    <svg viewBox="0 0 31 22" fill="none" id="path">
+        <path d="M2 21L18 3L24.5 18L29.5 6.5" stroke="white" stroke-width="3"/>
+    </svg>
 </svg>

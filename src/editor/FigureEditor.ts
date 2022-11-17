@@ -1,7 +1,7 @@
 import BaseShape from '../shapes/BaseShape';
 import ShapeControls from './ShapeControls';
 import shapeModules from '../shapes';
-import { autorun, isObservable, makeObservable, observable } from 'mobx';
+import { autorun, makeObservable, observable } from 'mobx';
 
 export default class FigureEditor {
     // @ts-ignore
@@ -14,12 +14,17 @@ export default class FigureEditor {
         height: window.innerHeight
     };
 
+    public shapeModules: any;
+    public activeType: string = 'rectangle';
+
     public shapes: BaseShape[] = [];
+    public contols: ShapeControls;
 
     constructor() {
+        this.shapeModules = shapeModules;
         this.initMobx();
 
-        ShapeControls.create(this.shapes, this);
+        this.contols = new ShapeControls(this.shapes, this);
 
         this.initCanvas();
         this.loadFromLS();
@@ -31,7 +36,8 @@ export default class FigureEditor {
 
     initMobx() {
         makeObservable(this, {
-            shapes: observable
+            shapes: observable,
+            activeType: observable
         });
 
         autorun(() => {
@@ -63,9 +69,13 @@ export default class FigureEditor {
         }
     }
 
+    setActiveType(type:string) {
+        this.activeType = type;
+    }
+
     createShape(shapeData: any, skipRender = false) {
         // @ts-ignore
-        const shapeModule = shapeModules[shapeData.type];
+        const shapeModule = this.shapeModules[shapeData.type];
 
         if (shapeModule) {
             const shapeInstance = observable(new (shapeModule)({
@@ -79,6 +89,8 @@ export default class FigureEditor {
             if (!skipRender) {
                 this.renderCtx();
             }
+
+            this.contols.createControl(shapeInstance);
 
             return shapeInstance;
         }
@@ -114,10 +126,10 @@ export default class FigureEditor {
             const { pageX, pageY } = e as unknown as PointerEvent;
             const initialPointer = { pageX, pageY };
 
-            ShapeControls.stop();
+            this.contols.stop();
 
             const shape = this.createShape({
-                type: this.shapes.length % 2 ? 'ellipse' : 'rectangle',
+                type: this.activeType,
                 ctx: this.ctx,
                 bound: {
                     fromX: pageX,
@@ -140,7 +152,7 @@ export default class FigureEditor {
                 this.renderCtx();
             });
 
-            $('body').one('pointerup.shape', (e) => {
+            this.contols.$controlContainer.one('pointerup.figure-editor', (e) => {
                 const { pageX, pageY } = e as unknown as PointerEvent;
                 const distance = Math.sqrt((pageX - initialPointer.pageX) ** 2 + (pageY - initialPointer.pageY) ** 2);
 
@@ -167,11 +179,11 @@ export default class FigureEditor {
 
                 this.renderCtx();
 
-                ShapeControls.start();
+                this.contols.start();
             });
         });
 
-        // $(window).on('unload', this.saveToLS);
+        $(window).on('unload', this.saveToLS);
 
         this.renderCtx();
     }
