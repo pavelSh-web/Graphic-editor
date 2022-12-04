@@ -1,9 +1,13 @@
 import React  from 'react';
 import Panel from './views/Panel';
 
-function App(props: any) {
+import { Provider } from "mobx-react";
+
+function App(props: { editor: any }) {
     return (
-        <Panel editor={ props.editor } />
+        <Provider editor={ props.editor }>
+            <Panel />
+        </Provider>
     );
 }
 

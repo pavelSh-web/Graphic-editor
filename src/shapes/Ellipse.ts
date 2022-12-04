@@ -8,6 +8,8 @@ export default class Ellipse extends BaseShape {
     }
 
     override render() {
+        super.render();
+
         const { fromX, fromY, toY, toX, width, height } = this.data.bound;
 
         const centerX = Math.max(fromX, toX) - width / 2;
@@ -19,7 +21,7 @@ export default class Ellipse extends BaseShape {
 
         path.ellipse(centerX, centerY, width / 2, height / 2, 0, 0, 2 * Math.PI);
 
-        this.ctx.fill(path);
+        this.applyPathStyle(path);
 
         this.ctx.restore();
     }

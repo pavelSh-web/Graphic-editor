@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { inject, observer } from "mobx-react";
 
-const PanelShapes = (props: any) => {
-    const [activeType, setType] = useState(props.editor.activeType);
-    const setActiveType = (type: string, e: any) => {
-        e.preventDefault();
-        e.stopPropagation();
+const PanelShapes = observer((props: any) => {
+    const activeType = props.editor.activeType;
 
-        props.editor.setActiveType(type);
-        setType(type);
+    const setActiveType = (type: string) => {
+        props.editor.activeType = type;
     }
 
     return (
@@ -29,6 +27,6 @@ const PanelShapes = (props: any) => {
             </div>
         </div>
     );
-};
+});
 
-export default PanelShapes;
+export default inject('editor')(PanelShapes);

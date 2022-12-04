@@ -1,7 +1,7 @@
 import BaseShape from '../shapes/BaseShape';
 import ShapeControls from './ShapeControls';
 import shapeModules from '../shapes';
-import { autorun, makeObservable, observable } from 'mobx';
+import {autorun, computed, makeObservable, observable} from 'mobx';
 
 export default class FigureEditor {
     // @ts-ignore
@@ -15,10 +15,72 @@ export default class FigureEditor {
     };
 
     public shapeModules: any;
-    public activeType: string = 'rectangle';
+
+    _activeType: string = 'rectangle';
+    _activeFillColor: string = '#000000';
+    _activeBorderColor: string = '#000000';
+    _activeBorderWidth: number = 2;
 
     public shapes: BaseShape[] = [];
+
     public contols: ShapeControls;
+
+    public get focusedShapes() {
+        return this.shapes.filter(shape => shape.hasState('focus'));
+    }
+
+    get activeFillColor(): string {
+        if (this.focusedShapes.length) {
+            return this.focusedShapes[0].data.style.fill.color;
+        }
+
+        return this._activeFillColor;
+    }
+
+    get activeBorderColor(): string {
+        if (this.focusedShapes.length) {
+            return this.focusedShapes[0].data.style.border.color;
+        }
+
+        return this._activeBorderColor;
+    }
+
+    get activeBorderWidth(): number {
+        if (this.focusedShapes.length) {
+            return this.focusedShapes[0].data.style.border.width;
+        }
+
+        return this._activeBorderWidth;
+    }
+
+    get activeType(): string {
+        this.resetState();
+
+        return this._activeType;
+    }
+
+    set activeFillColor(color: string) {
+        this._activeFillColor = color;
+
+        this.focusedShapes.forEach(shape => shape.setFill({ color }));
+    }
+
+    set activeBorderColor(color: string) {
+        this._activeBorderColor = color;
+
+        this.focusedShapes.forEach(shape => shape.setBorder({ color }));
+    }
+
+    set activeBorderWidth(width: number) {
+        this._activeBorderWidth = width;
+
+        this.focusedShapes.forEach(shape => shape.setBorder({ width }));
+    }
+
+    // TODO: описать тип
+    set activeType(type: string) {
+        this._activeType = type;
+    }
 
     constructor() {
         this.shapeModules = shapeModules;
@@ -37,11 +99,19 @@ export default class FigureEditor {
     initMobx() {
         makeObservable(this, {
             shapes: observable,
-            activeType: observable
+            _activeType: observable,
+            _activeFillColor: observable,
+            _activeBorderColor: observable,
+            _activeBorderWidth: observable,
+            focusedShapes: computed,
+            activeType: computed,
+            activeFillColor: computed,
+            activeBorderColor: computed,
+            activeBorderWidth: computed
         });
 
         autorun(() => {
-            const needRender = this.shapes.some(shape => shape.hasState(['resize', 'move', 'rotate'], true));
+            const needRender = this.shapes.some(shape => shape.hasState(['focus', 'resize', 'move', 'rotate'], true));
 
             if (needRender) {
                 this.renderCtx();
@@ -49,28 +119,25 @@ export default class FigureEditor {
         });
     }
 
+    // TODO pashtet: не работает
     loadFromLS() {
         const shapes = localStorage.getItem('shapes');
 
-        if (shapes) {
-            const shapesObject = JSON.parse(shapes);
-
-            if (Array.isArray(shapesObject)) {
-                shapesObject.forEach((shapeData) => {
-                    const shapeInstance = this.createShape(shapeData);
-
-                    shapeInstance.updateState({
-                        created: true
-                    });
-
-                    this.renderCtx();
-                });
-            }
-        }
-    }
-
-    setActiveType(type:string) {
-        this.activeType = type;
+        // if (shapes) {
+        //     const shapesObject = JSON.parse(shapes);
+        //
+        //     if (Array.isArray(shapesObject)) {
+        //         shapesObject.forEach((shapeData) => {
+        //             const shapeInstance = this.createShape(shapeData);
+        //
+        //             shapeInstance.updateState({
+        //                 created: true
+        //             });
+        //
+        //             this.renderCtx();
+        //         });
+        //     }
+        // }
     }
 
     createShape(shapeData: any, skipRender = false) {
@@ -78,11 +145,23 @@ export default class FigureEditor {
         const shapeModule = this.shapeModules[shapeData.type];
 
         if (shapeModule) {
+            console.log(this.activeFillColor);
             const shapeInstance = observable(new (shapeModule)({
                 ctx: this.ctx,
                 id: shapeData.id,
-                bound: shapeData.bound
+                bound: shapeData.bound,
+                style: {
+                    fill: {
+                        color: this.activeFillColor
+                    },
+                    border: {
+                        color: this.activeBorderColor,
+                        width: this.activeBorderWidth
+                    }
+                }
             }));
+
+            console.log(shapeInstance.data.style.fill.color);
 
             this.pushShape(shapeInstance);
 
@@ -98,8 +177,33 @@ export default class FigureEditor {
         return null;
     }
 
+    resetState() {
+        this.shapes.forEach(shape => shape.resetStates());
+    }
+
     pushShape(shape: BaseShape) {
         this.shapes.push(shape);
+    }
+
+    moveLayer({ position, shape }: { position: 'start' | 'end' | 'top' | 'bottom', shape?: BaseShape }) {
+        const shapes = shape ? [shape] : this.focusedShapes;
+
+        const shapeIndex = this.shapes.indexOf(shapes[0]);
+        const shapesLength = this.shapes.length;
+
+        const positions = {
+            start: 0,
+            end: shapesLength,
+            top: Math.max(shapeIndex + 1, shapesLength),
+            bottom: Math.min(shapeIndex - 1, 0)
+        }
+
+        if (shapes.length) {
+            this.shapes.splice(shapeIndex, shapes.length);
+            this.shapes.splice(positions[position],0, ...shapes);
+        }
+
+        shapes.forEach(shape => shape.updateState({ focus: true }));
     }
 
     deleteShape(shape: BaseShape) {

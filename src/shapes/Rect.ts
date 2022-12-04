@@ -8,8 +8,18 @@ export default class Rect extends BaseShape {
     }
 
     override render() {
+        super.render();
+
         const { fromX, fromY, toY, toX } = this.data.bound;
 
-        this.ctx.fillRect(fromX, fromY, toX - fromX, toY - fromY);
+        this.ctx.save();
+
+        const path = new Path2D();
+
+        path.rect(fromX, fromY, toX - fromX, toY - fromY);
+
+        this.applyPathStyle(path);
+
+        this.ctx.restore();
     }
 }

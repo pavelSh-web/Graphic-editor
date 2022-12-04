@@ -1,12 +1,9 @@
-import FigureEditor from '../editor/FigureEditor';
 import { getRandomId } from '../helpers';
-import ShapeControls from '../editor/ShapeControls';
 import {
     observable,
     makeObservable,
     action,
     computed,
-    isAction
 } from 'mobx';
 
 export type State = 'hover' | 'focus' | 'move' | 'resize' | 'rotate' | 'created';
@@ -24,7 +21,22 @@ export type ShapeBound = {
     height: number
 }
 
+export type ShapeFill = {
+    color: string
+}
+
+export type ShapeBorder = {
+    color: string,
+    width: number
+}
+
+export type ShapeStyle = {
+    fill: ShapeFill,
+    border: ShapeBorder
+}
+
 export type ShapeOptions = {
+    style: Partial<ShapeStyle>,
     state?: Partial<ShapeState>,
     bound?: Partial<ShapeBound>,
     ctx: CanvasRenderingContext2D,
@@ -36,7 +48,7 @@ export default class BaseShape {
     type: string = '';
     ctx: CanvasRenderingContext2D;
 
-    data: { state: ShapeState, bound: ShapeBound } = {
+    data: { state: ShapeState, bound: ShapeBound, style: ShapeStyle } = {
         state: {
             move: false,
             hover: false,
@@ -52,6 +64,15 @@ export default class BaseShape {
             toY: 0,
             width: 0,
             height: 0
+        },
+        style: {
+            fill: {
+                color: '#000000'
+            },
+            border: {
+                width: 10,
+                color: 'transparent'
+            }
         }
     };
 
@@ -77,6 +98,14 @@ export default class BaseShape {
 
         if (options.state) {
             this.updateState(options.state);
+        }
+
+        if (options.style && options.style.border) {
+            this.setBorder(options.style.border);
+        }
+
+        if (options.style && options.style.fill) {
+            this.setFill(options.style.fill);
         }
 
         this.ctx = options.ctx;
@@ -123,7 +152,20 @@ export default class BaseShape {
         }
     }
 
-    render() {}
+    applyPathStyle(path: Path2D) {
+        this.ctx.clip(path);
+        this.ctx.lineWidth *= 2;
+        this.ctx.fill(path);
+        this.ctx.stroke(path);
+    }
+
+    render() {
+        const { fill, border } = this.data.style;
+
+        this.ctx.fillStyle = fill.color;
+        this.ctx.strokeStyle = border.color;
+        this.ctx.lineWidth = border.width;
+    }
 
 
     updateBound(bound: Partial<ShapeBound>) {
@@ -156,6 +198,20 @@ export default class BaseShape {
 
         if (states.created) {
             this.normalizeBound();
+        }
+    }
+
+    setFill(fill: Partial<ShapeFill>) {
+        this.data.style.fill = {
+            ...this.data.style.fill,
+            ...fill
+        }
+    }
+
+    setBorder(border: Partial<ShapeBorder>) {
+        this.data.style.border = {
+            ...this.data.style.border,
+            ...border
         }
     }
 

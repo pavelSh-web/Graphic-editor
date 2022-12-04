@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import FillEditor from './FillEditor';
+import BorderEditor from './BorderEditor';
 
 const PanelShapeEditor = (props: any) => {
     return (
         <div className="panel-editor">
             <div className="panel-editor-inner">
-                3263726372637263367263723627362
+                <FillEditor />
+                <BorderEditor />
             </div>
         </div>
     );

@@ -57,8 +57,58 @@
     border-bottom-right-radius: 25px;
     margin-left: -25px;
     z-index: -1;
+    overflow: hidden;
 }
 
 .panel-editor-inner {
+    display: flex;
+    gap: 15px;
     height: 40px;
+}
+
+.settings-editor-label {
+    color: #2D405B;
+    font-size: 12px;
+    transition: opacity 0.2s ease;
+    opacity: 0.5;
+}
+
+.settings-editor {
+    height: 100%;
+}
+
+.settings-editor:hover .settings-editor-label {
+    opacity: 1;
+}
+
+.settings-editor.active .settings-editor-shape {
+    transition: all 0.4s ease;
+    transform: translateY(-14px);
+}
+
+.settings-editor.active .settings-editor-label {
+    transform: translateY(-20px);
+}
+
+.settings-editor-shape {
+    width: 40px;
+    height: 40px;
+    transition: all 0.1s ease;
+    transform: translateY(3px);
+
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15);
+}
+
+.settings-editor-shape.transparent {
+    background-size: cover;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABwSURBVHgB7dixCcAwDAXRr5Alsv+gyghG1VlwrzaCAxdCleTLQHdPnqeqRu+n858sZwDNAJoBNANoBtDe23ab6Xy/EM0AmgE0A2gG0PbvQrftNt6FtjGAZgDNAJoBNO9CJ96FDgygGUAzgGYAzQDaD3WAGHyFrA0aAAAAAElFTkSuQmCC');
+
+}
+
+.settings-editor-shape.rectangle {
+    border-radius: 0;
+}
+
+.settings-editor-shape.ellipse {
+    border-radius: 50%;
 }

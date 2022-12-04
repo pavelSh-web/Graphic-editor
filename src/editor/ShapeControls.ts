@@ -4,8 +4,9 @@ import { autorun, computed, makeObservable, reaction } from 'mobx';
 const controlContainerClass = 'shape-controls';
 const controlClass = 'shape-control';
 
-let ctrlPressed = false;
+let cmdPressed = false;
 let shiftPressed = false;
+const isMac = /Mac/i.test(navigator.platform);
 
 let _keyUpTimeout: any = null;
 
@@ -58,34 +59,35 @@ export default class ShapeControls {
         $(document).on('keydown', (e) => {
             const step = e.shiftKey ? 10 : 1;
             const isMove = e.code.includes('Arrow');
-            let needRender = isMove;
+            const deleteCode = isMac ? 'Backspace' : 'Delete';
 
-            if (e.ctrlKey) {
-                ctrlPressed = true;
-            }
+            console.log(e);
 
-            if (e.shiftKey) {
-                shiftPressed = true;
-            }
+            cmdPressed = isMac ? e.metaKey : e.ctrlKey;
+            shiftPressed = e.shiftKey;
 
             switch (e.code) {
-                case 'Delete':
+                case deleteCode:
                     if (this.focusedShapes.length) {
                         this.focusedShapes.forEach(shape => this.editor.deleteShape(shape));
                     }
                     break;
                 case 'KeyA':
-                    if (e.ctrlKey) {
+                    if (cmdPressed) {
                         this.shapes.forEach((shape) => shape.updateState({ focus: true }));
                     }
+                    break;
+                case 'BracketLeft':
+                    this.editor.moveLayer({ position: cmdPressed ? 'top' : 'start' });
+                    break;
+                case 'BracketRight':
+                    this.editor.moveLayer({ position: cmdPressed ? 'bottom' : 'end' });
                     break;
                 case 'KeyD':
                     e.preventDefault();
 
-                    if (e.ctrlKey) {
+                    if (cmdPressed) {
                         const focusedShape = this.focusedShapes[0];
-
-                        needRender = true;
 
                         if (focusedShape) {
                             const shape = this.editor.createShape({
@@ -129,7 +131,7 @@ export default class ShapeControls {
         $(document).on('keyup', (e) => {
             const isMove = e.code.includes('Arrow');
 
-            ctrlPressed = false;
+            cmdPressed = false;
             shiftPressed = false;
 
             if (isMove) {
@@ -169,7 +171,7 @@ export default class ShapeControls {
                 }
             }
 
-            if (!ctrlPressed) {
+            if (!cmdPressed) {
                 this.shapes.forEach(shape => shape.updateState({ focus: false }));
             }
 

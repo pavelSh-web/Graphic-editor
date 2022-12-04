@@ -1,0 +1,63 @@
+.colorpicker-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.colorpicker {
+    padding: 5px;
+    position: absolute;
+    background: #F6F6F6;
+    border-radius: 8px;
+    animation: .3s alternate slidein;
+    transform: translate(calc(-50% + 10px), calc(-100% - 10px));
+}
+
+.colorpicker-pallete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-list {
+    flex-direction: column;
+}
+
+.color-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 100px;
+}
+
+.color-item {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: opacity 0.1s ease;
+}
+
+.color-item.transparent {
+    border: 1px solid #FFFFFF;
+    background-size: contain;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABwSURBVHgB7dixCcAwDAXRr5Alsv+gyghG1VlwrzaCAxdCleTLQHdPnqeqRu+n858sZwDNAJoBNANoBtDe23ab6Xy/EM0AmgE0A2gG0PbvQrftNt6FtjGAZgDNAJoBNO9CJ96FDgygGUAzgGYAzQDaD3WAGHyFrA0aAAAAAElFTkSuQmCC');
+}
+.color-item:hover {
+    opacity: 0.8;
+}
+
+@keyframes slidein {
+    from {
+        transform: translate(calc(-50% + 10px), 0);
+        opacity: 0;
+    }
+    to {
+        transform: translate(calc(-50% + 10px), calc(-100% - 10px));
+        opacity: 1;
+    }
+}

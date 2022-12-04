@@ -11,6 +11,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+// @ts-ignore
 const editor = new FigureEditor();
 
 root.render(
