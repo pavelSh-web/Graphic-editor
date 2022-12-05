@@ -152,7 +152,7 @@ export default class BaseShape {
         }
     }
 
-    applyPathStyle(path: Path2D) {
+    protected applyPathStyle(path: Path2D) {
         this.ctx.clip(path);
         this.ctx.lineWidth *= 2;
         this.ctx.fill(path);

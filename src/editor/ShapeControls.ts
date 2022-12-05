@@ -61,8 +61,6 @@ export default class ShapeControls {
             const isMove = e.code.includes('Arrow');
             const deleteCode = isMac ? 'Backspace' : 'Delete';
 
-            console.log(e);
-
             cmdPressed = isMac ? e.metaKey : e.ctrlKey;
             shiftPressed = e.shiftKey;
 
