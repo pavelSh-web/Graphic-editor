@@ -10,12 +10,12 @@ export default class Ellipse extends BaseShape {
     override render() {
         super.render();
 
-        const { fromX, fromY, toY, toX, width, height } = this.data.bound;
+        this.ctx.save();
+
+        const { fromX, fromY, toY, toX, width, height } = this.rotate();
 
         const centerX = Math.max(fromX, toX) - width / 2;
         const centerY = Math.max(fromY, toY) - height / 2;
-
-        this.ctx.save();
 
         const path = new Path2D();
 

@@ -96,29 +96,68 @@
     width: 100%;
     top: -2px;
     left: -2px;
-    cursor: ns-resize;
 }
 
 .shape-control-resize__right {
     height: 100%;
     right: -2px;
     top: -2px;
-
-    cursor: ew-resize;
 }
 
 .shape-control-resize__bottom {
     width: 100%;
     left: -2px;
     bottom: -2px;
-    cursor: ns-resize;
 }
 
 .shape-control-resize__left {
     height: 100%;
     left: -2px;
     top: -2px;
+}
+
+.shape-control[data-resizer="type_0"] .shape-control-resize__top,
+.shape-control[data-resizer="type_0"] .shape-control-resize__bottom,
+.shape-control[data-resizer="type_45"] .shape-control-resize__top-left,
+.shape-control[data-resizer="type_45"] .shape-control-resize__bottom-right,
+.shape-control[data-resizer="type_90"] .shape-control-resize__left,
+.shape-control[data-resizer="type_90"] .shape-control-resize__right,
+.shape-control[data-resizer="type_135"] .shape-control-resize__top-right,
+.shape-control[data-resizer="type_135"] .shape-control-resize__bottom-left {
+    cursor: ns-resize;
+}
+
+.shape-control[data-resizer="type_0"] .shape-control-resize__left,
+.shape-control[data-resizer="type_0"] .shape-control-resize__right,
+.shape-control[data-resizer="type_45"] .shape-control-resize__top-right,
+.shape-control[data-resizer="type_45"] .shape-control-resize__bottom-left,
+.shape-control[data-resizer="type_90"] .shape-control-resize__top,
+.shape-control[data-resizer="type_90"] .shape-control-resize__bottom,
+.shape-control[data-resizer="type_135"] .shape-control-resize__top-left,
+.shape-control[data-resizer="type_135"] .shape-control-resize__bottom-right {
     cursor: ew-resize;
+}
+
+.shape-control[data-resizer="type_0"] .shape-control-resize__top-left,
+.shape-control[data-resizer="type_0"] .shape-control-resize__bottom-right,
+.shape-control[data-resizer="type_45"] .shape-control-resize__right,
+.shape-control[data-resizer="type_45"] .shape-control-resize__left,
+.shape-control[data-resizer="type_90"] .shape-control-resize__top-right,
+.shape-control[data-resizer="type_90"] .shape-control-resize__bottom-left,
+.shape-control[data-resizer="type_135"] .shape-control-resize__top,
+.shape-control[data-resizer="type_135"] .shape-control-resize__bottom {
+    cursor: nwse-resize;
+}
+
+.shape-control[data-resizer="type_0"] .shape-control-resize__top-right,
+.shape-control[data-resizer="type_0"] .shape-control-resize__bottom-left,
+.shape-control[data-resizer="type_45"] .shape-control-resize__top,
+.shape-control[data-resizer="type_45"] .shape-control-resize__bottom,
+.shape-control[data-resizer="type_90"] .shape-control-resize__top-left,
+.shape-control[data-resizer="type_90"] .shape-control-resize__bottom-right,
+.shape-control[data-resizer="type_135"] .shape-control-resize__left,
+.shape-control[data-resizer="type_135"] .shape-control-resize__right {
+    cursor: nesw-resize;
 }
 
 .shape-control-resize__top-left:hover,
@@ -146,25 +185,21 @@
 .shape-control-resize__top-left {
     top: -4px;
     left: -4px;
-    cursor: nwse-resize;
 }
 
 .shape-control-resize__top-right {
     top: -4px;
     right: -4px;
-    cursor: nesw-resize;
 }
 
 .shape-control-resize__bottom-left {
     bottom: -4px;
     left: -4px;
-    cursor: nesw-resize;
 }
 
 .shape-control-resize__bottom-right {
     bottom: -4px;
     right: -4px;
-    cursor: nwse-resize;
 }
 
 .shape-control.focus:not(.move) .shape-control-size {

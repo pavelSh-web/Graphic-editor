@@ -1,6 +1,6 @@
 import BaseShape, { ShapeOptions } from './BaseShape';
 
-export default class Rect extends BaseShape {
+export default class Poligon extends BaseShape {
     override type = 'rectangle';
 
     constructor(options: ShapeOptions) {

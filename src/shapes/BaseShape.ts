@@ -39,6 +39,7 @@ export type ShapeOptions = {
     style: Partial<ShapeStyle>,
     state?: Partial<ShapeState>,
     bound?: Partial<ShapeBound>,
+    rotate?: number,
     ctx: CanvasRenderingContext2D,
     id?: number
 }
@@ -48,7 +49,7 @@ export default class BaseShape {
     type: string = '';
     ctx: CanvasRenderingContext2D;
 
-    data: { state: ShapeState, bound: ShapeBound, style: ShapeStyle } = {
+    data: { state: ShapeState, bound: ShapeBound, rotate: number, style: ShapeStyle } = {
         state: {
             move: false,
             hover: false,
@@ -65,6 +66,7 @@ export default class BaseShape {
             width: 0,
             height: 0
         },
+        rotate: 0,
         style: {
             fill: {
                 color: '#000000'
@@ -167,6 +169,28 @@ export default class BaseShape {
         this.ctx.lineWidth = border.width;
     }
 
+    protected rotate(): ShapeBound {
+        if (!this.data.state.created) {
+            return this.data.bound;
+        }
+
+        const { fromX, fromY, toX, toY, width, height } = this.data.bound;
+        this.ctx.translate(Math.min(fromX, toX) + width / 2, Math.min(fromY, toY) + height / 2);
+
+        const normX = toX < fromX ? -1 : 1;
+        const normY = toY < fromY ? -1 : 1;
+
+        this.ctx.rotate(this.data.rotate * (Math.PI / 180));
+
+        return {
+            fromX: width / 2 * -normX,
+            fromY: height / 2 * -normY,
+            toX: width / 2 * normX,
+            toY: height / 2 * normY,
+            width,
+            height,
+        };
+    }
 
     updateBound(bound: Partial<ShapeBound>) {
         this.data.bound = {

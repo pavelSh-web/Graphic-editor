@@ -1,5 +1,6 @@
 import BaseShape, { ShapeBound } from '../shapes/BaseShape';
 import { autorun, computed, makeObservable, reaction } from 'mobx';
+import { getAngle, getVector, inRange, stickAngle } from '../helpers';
 
 const controlContainerClass = 'shape-controls';
 const controlClass = 'shape-control';
@@ -227,7 +228,7 @@ export default class ShapeControls {
             this.start();
         });
         this.$controlContainer.on('pointermove', (e) => {
-            if (this.stopped && !inMove && !inResize) {
+            if (this.stopped && !inMove && !inResize && !inRotate) {
                 return;
             }
 
@@ -281,10 +282,14 @@ export default class ShapeControls {
                             shape.resize({ bound });
                         }
                         else {
-                            // const proportionMax = shape.bound.width > shape.bound.height ? 'x' : 'y';
-                            //
-                            // const valueX = shiftPressed ? Math.max(e.pageX, e.pageY) : e.pageX;
-                            // const valueY = shiftPressed ? Math.max(e.pageX, e.pageY) : e.pageY;
+                            const { fromX, fromY } = shape.data.bound;
+
+                            const size = Math.min(e.pageX - fromX, e.pageY - fromY);
+
+                            bound.toX = fromX + size;
+                            bound.toY = fromY + size;
+
+                            shape.resize({ bound });
                         }
 
                         shape.updateState({
@@ -297,6 +302,54 @@ export default class ShapeControls {
 
                     if (e.pageX && e.pageY) {
                         const shape = this.focusedShapes[0];
+                        const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
+                        const $activeControl = shape.$control.find(`.${ controlClass }-rotate.active`) as JQuery;
+                        const editableCoords = ($activeControl.attr('data-rotate-control') as string).split(',');
+                        const rotateControlName = editableCoords.join('_');
+                        const rotateDots: any = {
+                            top_left: {
+                                x: 0,
+                                y: 0
+                            },
+                            top_right: {
+                                x: toX,
+                                y: 0
+                            },
+                            bottom_left: {
+                                x: 0,
+                                y: toY
+                            },
+                            bottom_right: {
+                                x: toX,
+                                y: toY
+                            }
+                        };
+
+                        const rotateDotAngle: any = {
+                            top_left: 0,
+                            top_right: -22,
+                            bottom_left: -45,
+                            bottom_right: 22
+                        }
+
+
+                        const baseVector = getVector({
+                            x: fromX + (width / 2),
+                            y: fromY + (height / 2)
+                        }, rotateDots[rotateControlName] ?? rotateDots.top_right);
+
+                        const rotateVector = getVector({
+                            x: fromX + (width / 2),
+                            y: fromY + (height / 2)
+                        }, {
+                            x: e.pageX,
+                            y: e.pageY
+                        });
+
+                        const alpha = getAngle(baseVector, rotateVector);
+                        const rotate = (alpha * 180 / Math.PI) + (rotateDotAngle[rotateControlName] ?? 0);
+
+                        shape.data.rotate = stickAngle(rotate);
 
                         this.$controlContainer.addClass('in-rotate');
 
@@ -316,7 +369,6 @@ export default class ShapeControls {
                             });
                             shape.updateState({ move: true });
                         }
-
                     });
                 }
             }
@@ -371,12 +423,33 @@ export default class ShapeControls {
     updateResizeContol(shape: BaseShape) {
         if (shape.$control) {
             const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
+            const rotate = shape.data.rotate;
 
             shape.$control.css({
                 top: Math.min(fromY, toY),
                 left: Math.min(fromX, toX),
+                transform: `rotate(${ rotate }deg)`,
                 width,
                 height
+            });
+
+            const resizers = {
+                type_0: [[-22, 22], [-202, -158]],
+                type_45: [[22, 67], [-157, -113]],
+                type_90: [[68, 112], [-112, -68]],
+                type_135: [[113, 158], [-67, -23]],
+            };
+
+            Object.entries(resizers).some(([type, ranges]) => {
+                return ranges.some((range) => {
+                    if (inRange(range, rotate)) {
+                        shape.$control.attr('data-resizer', type);
+
+                        return true;
+                    }
+
+                    return false;
+                });
             });
 
             Object.entries(shape.data.state).forEach(([stateName, stateValue]) => {
