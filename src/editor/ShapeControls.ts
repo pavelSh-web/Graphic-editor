@@ -190,6 +190,7 @@ export default class ShapeControls {
                     inRotate = true;
 
                     $controlRotate.addClass('active');
+                    this.$controlContainer.addClass('in-rotate');
                 }
                 else {
                     inMove = true;
@@ -201,11 +202,6 @@ export default class ShapeControls {
                     }
 
                     shape.updateState({ focus: true });
-
-                    const $controls = this.$controls;
-
-                    // Перемещаем контрол в конец списка дом нод
-                    shape.$control.insertAfter($controls[$controls.length - 1]);
                 }
             }
         });
@@ -218,7 +214,8 @@ export default class ShapeControls {
                 shape.normalizeBound();
                 shape.updateState({
                     move: false,
-                    resize: false
+                    resize: false,
+                    rotate: false
                 });
             });
 
@@ -351,8 +348,6 @@ export default class ShapeControls {
 
                         shape.data.rotate = stickAngle(rotate);
 
-                        this.$controlContainer.addClass('in-rotate');
-
                         shape.updateState({
                             rotate: true
                         });
@@ -391,6 +386,7 @@ export default class ShapeControls {
                 <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-left" data-resize-control="bottom,left"></div>
                 <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-right" data-resize-control="bottom,right"></div>
                 <div class="${ controlClass }-size"></div>
+                <div class="${ controlClass }-rotate__value"></div>
             </div>
         `);
 
@@ -424,6 +420,9 @@ export default class ShapeControls {
         if (shape.$control) {
             const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
             const rotate = shape.data.rotate;
+            const $rotateValue = shape.$control.find(`.${ controlClass }-rotate__value`);
+
+            $rotateValue.text(`${ Math.round(rotate) }°`);
 
             shape.$control.css({
                 top: Math.min(fromY, toY),
@@ -431,6 +430,11 @@ export default class ShapeControls {
                 transform: `rotate(${ rotate }deg)`,
                 width,
                 height
+            });
+
+            $rotateValue.css({
+                transform: `rotate(${ -rotate }deg)`,
+                visibility: Math.min(width, height) < 50 ? 'hidden' : 'visible'
             });
 
             const resizers = {
