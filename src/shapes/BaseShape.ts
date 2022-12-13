@@ -21,22 +21,22 @@ export type ShapeBound = {
     height: number
 }
 
-export type ShapeFill = {
+export type IFill = {
     color: string
 }
 
-export type ShapeBorder = {
+export type IBorder = {
     color: string,
     width: number
 }
 
-export type ShapeStyle = {
-    fill: ShapeFill,
-    border: ShapeBorder
+export type IStyle = {
+    fill: IFill,
+    border: IBorder
 }
 
 export type ShapeOptions = {
-    style: Partial<ShapeStyle>,
+    style: Partial<IStyle>,
     state?: Partial<ShapeState>,
     bound?: Partial<ShapeBound>,
     rotate?: number,
@@ -49,7 +49,9 @@ export default class BaseShape {
     type: string = '';
     ctx: CanvasRenderingContext2D;
 
-    data: { state: ShapeState, bound: ShapeBound, rotate: number, style: ShapeStyle } = {
+    allowRotate: boolean = true;
+
+    data: { state: ShapeState, bound: ShapeBound, rotate: number, style: IStyle } = {
         state: {
             move: false,
             hover: false,
@@ -225,14 +227,14 @@ export default class BaseShape {
         }
     }
 
-    setFill(fill: Partial<ShapeFill>) {
+    setFill(fill: Partial<IFill>) {
         this.data.style.fill = {
             ...this.data.style.fill,
             ...fill
         }
     }
 
-    setBorder(border: Partial<ShapeBorder>) {
+    setBorder(border: Partial<IBorder>) {
         this.data.style.border = {
             ...this.data.style.border,
             ...border
@@ -261,6 +263,44 @@ export default class BaseShape {
                 toY: fromY
             });
         }
+    }
+
+    createDown(e: any) {}
+    createDoubleClick(e: any) {}
+
+    createUp(e: any, initialPointer: any) {
+        const { pageX, pageY } = e as unknown as PointerEvent;
+        const distance = Math.sqrt((pageX - initialPointer.pageX) ** 2 + (pageY - initialPointer.pageY) ** 2);
+
+        console.trace('here');
+
+        if (+distance.toFixed(0) <= 10) {
+            const { width, height } = this.defaultSize;
+            const { fromX, fromY } = this.data.bound;
+
+            this.resize({
+                bound: {
+                    width,
+                    height,
+                    fromX: fromX - (width / 2),
+                    fromY: fromY - (height / 2)
+                }
+            })
+        }
+
+        this.updateState({
+            focus: true,
+            created: true
+        });
+    }
+
+    createMove(e: any, initialPointer: any) {
+        const { pageX: x, pageY: y } = e as unknown as PointerEvent;
+
+        this.resize({
+            pointer: { x, y },
+            saveProportion: true
+        });
     }
 
     resetStates() {

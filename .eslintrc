@@ -1,0 +1,18 @@
+//{
+//  "parserOptions": {
+//    "es6": true,
+//    "ecmaVersion": 6,
+//    "sourceType": "module",
+//    "ecmaFeatures": {
+//      "jsx": true
+//    }
+//  },
+//  "parser": "babel-eslint",
+//  "rules": {
+//    "no-unused-vars": 0
+//  },
+//  "env": {
+//    "browser": true,
+//    "node": true
+//  }
+//}

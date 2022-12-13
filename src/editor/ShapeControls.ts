@@ -38,6 +38,10 @@ export default class ShapeControls {
         this.bindKeyboardEvents();
 
         this.initMobx();
+
+        // for debug only
+        // @ts-ignore
+        window.controls = this;
     }
 
     private initMobx() {
@@ -373,10 +377,13 @@ export default class ShapeControls {
     createControl(shape: BaseShape) {
         shape.$control = $(`
             <div class="${ controlClass }" data-shape-id="${ shape.id }">
-                <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-left" data-rotate-control="top,left"></div>
-                <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-right" data-rotate-control="top,right"></div>
-                <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-left" data-rotate-control="bottom,left"></div>
-                <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-right" data-rotate-control="bottom,right"></div>
+                ${ shape.allowRotate ? `
+                    <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-left" data-rotate-control="top,left"></div>
+                    <div class="${ controlClass }-rotate ${ controlClass }-rotate__top-right" data-rotate-control="top,right"></div>
+                    <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-left" data-rotate-control="bottom,left"></div>
+                    <div class="${ controlClass }-rotate ${ controlClass }-rotate__bottom-right" data-rotate-control="bottom,right"></div>
+                ` : '' }
+
                 <div class="${ controlClass }-resize ${ controlClass }-resize__top" data-resize-control="top"></div>
                 <div class="${ controlClass }-resize ${ controlClass }-resize__right" data-resize-control="right"></div>
                 <div class="${ controlClass }-resize ${ controlClass }-resize__bottom" data-resize-control="bottom"></div>
@@ -386,7 +393,7 @@ export default class ShapeControls {
                 <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-left" data-resize-control="bottom,left"></div>
                 <div class="${ controlClass }-resize ${ controlClass }-resize__bottom-right" data-resize-control="bottom,right"></div>
                 <div class="${ controlClass }-size"></div>
-                <div class="${ controlClass }-rotate__value"></div>
+                ${ shape.allowRotate ? `<div class="${ controlClass }-rotate__value"></div>` : '' }
             </div>
         `);
 
@@ -420,9 +427,6 @@ export default class ShapeControls {
         if (shape.$control) {
             const { fromX, fromY, toX, toY, width, height } = shape.data.bound;
             const rotate = shape.data.rotate;
-            const $rotateValue = shape.$control.find(`.${ controlClass }-rotate__value`);
-
-            $rotateValue.text(`${ Math.round(rotate) }°`);
 
             shape.$control.css({
                 top: Math.min(fromY, toY),
@@ -432,10 +436,16 @@ export default class ShapeControls {
                 height
             });
 
-            $rotateValue.css({
-                transform: `rotate(${ -rotate }deg)`,
-                visibility: Math.min(width, height) < 50 ? 'hidden' : 'visible'
-            });
+            if (shape.allowRotate) {
+                const $rotateValue = shape.$control.find(`.${ controlClass }-rotate__value`);
+
+                $rotateValue.text(`${ Math.round(rotate) }°`);
+
+                $rotateValue.css({
+                    transform: `rotate(${ -rotate }deg)`,
+                    visibility: Math.min(width, height) < 50 ? 'hidden' : 'visible'
+                });
+            }
 
             const resizers = {
                 type_0: [[-22, 22], [-202, -158]],

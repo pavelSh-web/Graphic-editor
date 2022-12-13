@@ -145,7 +145,6 @@ export default class FigureEditor {
         const shapeModule = this.shapeModules[shapeData.type];
 
         if (shapeModule) {
-            console.log(this.activeFillColor);
             const shapeInstance = observable(new (shapeModule)({
                 ctx: this.ctx,
                 id: shapeData.id,
@@ -160,8 +159,6 @@ export default class FigureEditor {
                     }
                 }
             }));
-
-            console.log(shapeInstance.data.style.fill.color);
 
             this.pushShape(shapeInstance);
 
@@ -226,65 +223,66 @@ export default class FigureEditor {
 
         $(window).on('resize', this.renderCtx);
 
+        let activeShape: any = null;
+        let lastPointerDownEvent: any = null;
+
         $('body').on('pointerdown', (e) => {
             const { pageX, pageY } = e as unknown as PointerEvent;
             const initialPointer = { pageX, pageY };
 
             this.contols.stop();
 
-            const shape = this.createShape({
-                type: this.activeType,
-                ctx: this.ctx,
-                bound: {
-                    fromX: pageX,
-                    fromY: pageY
-                }
-            }, true);
+            if (!activeShape) {
+                const shape = this.createShape({
+                    type: this.activeType,
+                    ctx: this.ctx,
+                    bound: {
+                        fromX: pageX,
+                        fromY: pageY
+                    }
+                }, true);
 
-            if (!shape) {
-                return;
+                if (!shape) {
+                    return;
+                }
+
+                activeShape = shape;
             }
 
-            $('body').on('pointermove.shape', (e) => {
-                const { pageX: x, pageY: y } = e as unknown as PointerEvent;
+            if (activeShape) {
+                const distance = lastPointerDownEvent ? Math.sqrt((pageX - lastPointerDownEvent.pageX) ** 2 + (pageY - lastPointerDownEvent.pageY) ** 2) : 0;
 
-                shape.resize({
-                    pointer: { x, y },
-                    saveProportion: true
-                });
-
-                this.renderCtx();
-            });
-
-            this.contols.$controlContainer.one('pointerup.figure-editor', (e) => {
-                const { pageX, pageY } = e as unknown as PointerEvent;
-                const distance = Math.sqrt((pageX - initialPointer.pageX) ** 2 + (pageY - initialPointer.pageY) ** 2);
-
-                if (+distance.toFixed(0) <= 10) {
-                    const { width, height } = shape.defaultSize;
-                    const { fromX, fromY } = shape.data.bound;
-
-                    shape.resize({
-                        bound: {
-                            width,
-                            height,
-                            fromX: fromX - (width / 2),
-                            fromY: fromY - (height / 2)
-                        }
-                    })
+                if (lastPointerDownEvent && distance < 20) {
+                    activeShape.createDoubleClick(e);
+                }
+                else {
+                    activeShape.createDown(e);
                 }
 
-                shape.updateState({
-                    focus: true,
-                    created: true
+
+                $('body').on('pointermove.shape', (e) => {
+                    activeShape.createMove(e, initialPointer);
+
+                    this.renderCtx();
                 });
 
-                $('body').off('.shape');
+                this.contols.$controlContainer.one('pointerup.figure-editor', (e) => {
+                    activeShape.createUp(e, initialPointer);
 
-                this.renderCtx();
+                    this.renderCtx();
 
-                this.contols.start();
-            });
+                    if (activeShape.hasState('created')) {
+                        activeShape = null;
+                        lastPointerDownEvent = null;
+
+                        $('body').off('.shape');
+
+                        this.contols.start();
+                    }
+                });
+            }
+
+            lastPointerDownEvent = e;
         });
 
         $(window).on('unload', this.saveToLS);

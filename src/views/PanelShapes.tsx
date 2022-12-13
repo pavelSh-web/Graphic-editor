@@ -20,7 +20,7 @@ const PanelShapes = observer((props: any) => {
                     <rect x="1.5" y="1.5" width="26" height="26" rx="13" stroke="white" strokeWidth="3"/>
                 </svg>
             </div>
-            <div className={ `panel-shapes-type ${ activeType === 'path' ? 'active' : '' }` } onPointerDown={ setActiveType.bind({}, 'path') }>
+            <div className={ `panel-shapes-type ${ activeType === 'bazier' ? 'active' : '' }` } onPointerDown={ setActiveType.bind({}, 'bazier') }>
                 <svg width="31" height="22" viewBox="0 0 31 22" fill="none">
                     <path d="M2 21L18 3L24.5 18L29.5 6.5" stroke="white" strokeWidth="3"/>
                 </svg>

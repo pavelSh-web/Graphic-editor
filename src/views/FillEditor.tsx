@@ -9,7 +9,6 @@ const FillEditor = observer((props: any) => {
 
     const colorpicker = (event: any) => {
         openColorpicker(event, editor, {}, (color) => {
-            console.log(color);
             editor.activeFillColor = color;
 
             setEditorActive(false);

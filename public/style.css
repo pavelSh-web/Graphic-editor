@@ -35,6 +35,10 @@
     opacity: 0;
 }
 
+.shape-control:not(.created) {
+    display: none;
+}
+
 .shape-control.hover,
 .shape-control.focus {
     opacity: 1;

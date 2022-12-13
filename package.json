@@ -89,6 +89,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.20.2",
     "@types/jquery": "^3.5.14",
+    "babel-eslint": "^10.1.0",
     "mobx": "^6.7.0",
     "mobx-react": "^7.6.0",
     "mobx-react-devtools": "^6.1.1"
