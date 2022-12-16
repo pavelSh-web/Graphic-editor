@@ -1,7 +1,17 @@
 import BaseShape from '../shapes/BaseShape';
 import ShapeControls from './ShapeControls';
 import shapeModules from '../shapes';
-import {autorun, computed, makeObservable, observable} from 'mobx';
+import { autorun, computed, makeObservable, observable, reaction } from 'mobx';
+
+let lastPointer = {
+    pageX: 0,
+    pageY: 0
+}
+
+// @ts-ignore
+import Dropzone from 'dropzone';
+import Image from '../shapes/Image';
+import ImageShape from '../shapes/Image';
 
 export default class FigureEditor {
     // @ts-ignore
@@ -14,12 +24,15 @@ export default class FigureEditor {
         height: window.innerHeight
     };
 
+    dropzone: Dropzone;
+
     public shapeModules: any;
 
     _activeType: string = 'rectangle';
     _activeFillColor: string = '#000000';
     _activeBorderColor: string = '#000000';
     _activeBorderWidth: number = 2;
+    _activeInterpolation: 'linear' | 'stepwise' = 'linear';
 
     public shapes: BaseShape[] = [];
 
@@ -59,6 +72,17 @@ export default class FigureEditor {
         return this._activeType;
     }
 
+    get activeInterpolation(): 'linear' | 'stepwise' {
+        if (this.focusedShapes.length) {
+            const focusedShape = this.focusedShapes[0] as ImageShape;
+            const isImage = focusedShape.type === 'image';
+
+            return isImage ? focusedShape.image.interpolation : 'linear';
+        }
+
+        return this._activeInterpolation;
+    }
+
     set activeFillColor(color: string) {
         this._activeFillColor = color;
 
@@ -82,11 +106,22 @@ export default class FigureEditor {
         this._activeType = type;
     }
 
+    set activeInterpolation(interpolation: 'linear' | 'stepwise') {
+        this._activeInterpolation = interpolation;
+
+        // @ts-ignore
+        this.focusedShapes.forEach(shape => shape?.setImage?.({
+            interpolation
+        }));
+    }
+
     constructor() {
         this.shapeModules = shapeModules;
         this.initMobx();
 
         this.contols = new ShapeControls(this.shapes, this);
+
+        this.initDropzone();
 
         this.initCanvas();
         this.loadFromLS();
@@ -103,11 +138,13 @@ export default class FigureEditor {
             _activeFillColor: observable,
             _activeBorderColor: observable,
             _activeBorderWidth: observable,
+            _activeInterpolation: observable,
             focusedShapes: computed,
             activeType: computed,
             activeFillColor: computed,
             activeBorderColor: computed,
-            activeBorderWidth: computed
+            activeBorderWidth: computed,
+            activeInterpolation: computed
         });
 
         autorun(() => {
@@ -151,11 +188,15 @@ export default class FigureEditor {
                 bound: shapeData.bound,
                 style: {
                     fill: {
-                        color: this.activeFillColor
+                        color: this.activeFillColor,
+
+                        ...shapeData.style?.fill
                     },
                     border: {
                         color: this.activeBorderColor,
-                        width: this.activeBorderWidth
+                        width: this.activeBorderWidth,
+
+                        ...shapeData.style?.border
                     }
                 }
             }));
@@ -331,5 +372,75 @@ export default class FigureEditor {
         this.canvas.height = height;
 
         this.ctx.scale(1, 1);
+    }
+
+    initDropzone() {
+        const fileReader = new FileReader();
+
+        this.dropzone = new Dropzone(this.contols.$controlContainer[0], {
+            url: '/',
+            clickable: false,
+            hiddenInputContainer: true,
+            addedfile: (file: any) => {
+                // Очень тупой костыль c setTimeout, надо исправить
+                setTimeout(() => {
+                    const shape: Image = this.createShape({
+                        type: 'image',
+                        ctx: this.ctx,
+                        bound: {
+                            fromX: lastPointer.pageX,
+                            fromY: lastPointer.pageY,
+                            width: file.width,
+                            height: file.height
+                        },
+                        style: {
+                            fill: {
+                                color: 'transparent'
+                            },
+                            border: {
+                                color: 'transparent'
+                            }
+                        }
+                    }, true);
+
+                    const proportion = file.height / file.width;
+
+                    if (shape.width > shape.defaultSize.width || shape.height > shape.defaultSize.height) {
+                        shape.updateBound({
+                            width: shape.defaultSize.width,
+                            height: shape.defaultSize.width * proportion
+                        });
+                    }
+
+                    shape.setImage({
+                        interpolation: 'linear',
+                        proportion,
+                        dataUrl: file.dataURL,
+                        width: file.width,
+                        height: file.height
+                    });
+
+                    shape.updateState({
+                        created: true
+                    });
+
+                    reaction(
+                        () => shape.image,
+                        () => {
+                            this.renderCtx();
+                        }
+                    )
+
+                    this.renderCtx();
+                }, 200);
+            }
+        });
+
+        this.contols.$controlContainer.on('pointermove.dropzone', (e: any) => {
+            lastPointer = {
+                pageX: e.pageX,
+                pageY: e.pageY
+            }
+        });
     }
 }

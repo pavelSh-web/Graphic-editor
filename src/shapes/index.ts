@@ -1,11 +1,11 @@
 import Rect from './Rect';
 import Ellipse from './Ellipse';
-import Poligon from './Poligon';
 import Bezier from './Bezier';
+import Image from './Image';
 
 export default {
-    poligon: Poligon,
     rectangle: Rect,
     ellipse: Ellipse,
-    bazier: Bezier
+    bazier: Bezier,
+    image: Image
 };

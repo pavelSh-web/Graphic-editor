@@ -112,3 +112,55 @@
 .settings-editor-shape.ellipse {
     border-radius: 50%;
 }
+
+.border-editor {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.border-editor .width-editor input {
+    margin-top: 7px;
+}
+
+.editor-button {
+    --active-color: #2D405B;
+
+    padding: 6px 12px;
+    border: 1px solid var(--active-color);
+    color: var(--active-color);
+    opacity: 0.6;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 83px;
+    transition: all 0.2s ease;
+    background: #ffffff;
+
+    cursor: pointer;
+}
+
+.editor-button.active {
+    background: var(--active-color);
+    opacity: 1;
+    color: #ffffff;
+    cursor: default;
+    pointer-events: none;
+}
+
+.editor-button:hover {
+    opacity: 1;
+}
+
+.image-editor {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.image-editor.hidden {
+    display: none;
+}

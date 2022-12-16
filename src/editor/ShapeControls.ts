@@ -105,7 +105,7 @@ export default class ShapeControls {
 
                             this.createControl(shape);
                             this.shapes.forEach(shape => shape.resetStates());
-                            shape.updateState({ focus: true });
+                            shape.updateState({ created: true, focus: true });
                         }
                     }
                     break;

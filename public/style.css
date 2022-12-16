@@ -309,6 +309,14 @@
     user-select: none;
 }
 
+.dropzone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
 @keyframes scale {
     from {
         transform: scale(0.3);

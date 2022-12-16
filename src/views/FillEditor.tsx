@@ -19,7 +19,7 @@ const FillEditor = observer((props: any) => {
 
     return (
         <div className={ `settings-editor fill-editor ${ editorActive ? 'active' : '' }` } onClick={ colorpicker }>
-            <div className="settings-editor-label">Color</div>
+            <div className="settings-editor-label">Fill</div>
             <div className={ `settings-editor-shape settings-editor-shape_fill ${ editor.activeFillColor === 'transparent' ? 'transparent' : '' } ${ editor.activeType }` } style={{
                 backgroundColor: `${ editor.activeFillColor }`
             }}/>

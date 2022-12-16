@@ -4,7 +4,7 @@ import {RGBToHex} from "../helpers";
 
 const Colorpicker = observer((props: any) => {
     const { onClose, options } = props;
-    const colorList = ['#469EC3', '#02747F', '#42A8AA', '#C7986A', '#A5BBAF', '#A7835F', '#E4B460', '#DF5F5F'];
+    const colorList = ['#469EC3', '#02747F', '#42A8AA', '#C7986A', '#A5BBAF', '#ff9e3d', '#E4B460', '#f22424'];
 
     const select = (color: string) => {
         onClose?.(color);
