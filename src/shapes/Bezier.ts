@@ -64,9 +64,9 @@ export default class Bezier extends BaseShape {
             return;
         }
 
-        requestAnimationFrame(() => {
-            this.renderPreviewLine(e, initialPointer);
-        });
+        // requestAnimationFrame(() => {
+        //     this.renderPreviewLine(e, initialPointer);
+        // });
     }
 
     override createUp() {}
@@ -83,9 +83,17 @@ export default class Bezier extends BaseShape {
             // this.ctx.moveTo(x, y);
 
             points.forEach((point, index) => {
-                const { x: fromX, y: fromY } = point;
+                const p0 = index > 0 ? points[index - 1] : points[0];
+                const p1 = point;
+                const p2 = points[index + 1] ?? point;
+                const p3 = (index !== points.length - 2) ? points[index + 2] ?? p2 : p2;
 
-                this.ctx.bezierCurveTo(fromX, fromY, fromX, fromY, fromX, fromY);
+                const cp1x = p1.x + (p2.x - p0.x) / 10;
+                const cp1y = p1.y + (p2.y - p0.y) / 10;
+                const cp2x = p2.x - (p3.x - p1.x) / 10;
+                const cp2y = p2.y - (p3.y - p1.y) / 10;
+
+                this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
             });
         }
 
